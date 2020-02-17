@@ -12,7 +12,7 @@ class setting_Data:
   JSON = {}
   User = {}
   #####################################
-  reset = ses.WS_Esign() #Replace with any other module that creates a dict for settings.
+  reset = ses.SES() #Replace with any other module that creates a dict for settings.
   #####################################
   
   def __init__(self, file_stream = "config\\config.json"):

@@ -59,40 +59,40 @@ class wsRefresh:
     self.root.title(self.APP_TITLE)
     self.root.wm_attributes("-topmost",1)
     
-    self.WS_refresh_buttonBar = Frame(root, width = 600, height = 31, bg=self.banner_color)
+    self.WS_refresh_buttonBar = tk.Frame(root, width = 600, height = 31, bg=self.banner_color)
     #Allows the frame to expand to the set width and height
     self.WS_refresh_buttonBar.grid_propagate(False)
     
-    self.WS_Center = Frame(root, bg = self.bg_theme)
-    self.WS_refresh_buttonBar.grid(sticky=E+W)
+    self.WS_Center = tk.Frame(root, bg = self.bg_theme)
+    self.WS_refresh_buttonBar.grid(sticky='EW')
     self.WS_Center.grid(row=1, sticky='nsew')
     
-    self.WS_refresh_form = Frame(self.WS_Center, bg = self.bg_theme)
-    self.WS_refresh_textarea = Frame(self.WS_Center, bg = self.bg_theme)
+    self.WS_refresh_form = tk.Frame(self.WS_Center, bg = self.bg_theme)
+    self.WS_refresh_textarea = tk.Frame(self.WS_Center, bg = self.bg_theme)
     self.WS_refresh_form.grid(column=0, row=0,padx = 5, pady = 10, sticky ='NW')
     self.WS_refresh_textarea.grid(column=1, row = 0, padx=15, pady=10, sticky='NW')
   
-    self.KDS_TS_Btn = Button(self.WS_refresh_buttonBar, text="KDS Timestamp", command = nothing, bg = self.button_bg, fg = self.button_fg, activebackground=self.button_active_bg, activeforeground=self.button_active_fg)
+    self.KDS_TS_Btn = tk.Button(self.WS_refresh_buttonBar, text="KDS Timestamp", command = nothing, bg = self.button_bg, fg = self.button_fg, activebackground=self.button_active_bg, activeforeground=self.button_active_fg)
     self.KDS_TS_Btn.grid(column=0, row=0, padx=10)
-    self.Comment_TS_Btn = Button(self.WS_refresh_buttonBar, text = "Comment Timestamp", command = nothing, bg = self.button_bg, fg = self.button_fg, activebackground=self.button_active_bg, activeforeground=self.button_active_fg)
+    self.Comment_TS_Btn = tk.Button(self.WS_refresh_buttonBar, text = "Comment Timestamp", command = nothing, bg = self.button_bg, fg = self.button_fg, activebackground=self.button_active_bg, activeforeground=self.button_active_fg)
     self.Comment_TS_Btn.grid(column=1, row=0)
-    seperator = Frame(self.WS_refresh_buttonBar, width = 10)
+    seperator = tk.Frame(self.WS_refresh_buttonBar, width = 10)
     seperator.grid_propagate(False)
     seperator.grid(column = 2, padx=23)
     
-    self.clearFrame = Frame(self.WS_refresh_buttonBar, bg = self.banner_color)
+    self.clearFrame = tk.Frame(self.WS_refresh_buttonBar, bg = self.banner_color)
     self.clearFrame.grid(column=3, row = 0, padx=15, sticky='nsew')
     
-    self.clear_all = Button(self.clearFrame, text="Clear Only", command = nothing, bg='#ebdb34', fg='#0d0d0c', activebackground='#ccbe2d', activeforeground='#0d0d0c')
+    self.clear_all = tk.Button(self.clearFrame, text="Clear Only", command = nothing, bg='#ebdb34', fg='#0d0d0c', activebackground='#ccbe2d', activeforeground='#0d0d0c')
     self.clear_all.grid(column=0, row = 0, padx=18, sticky='E')
-    self.clear_all = Button(self.clearFrame, text="Clear & Log", command = nothing, bg='#C1392B', fg='#F8F8F8', activebackground='#a3382a', activeforeground='#F8F8F8')
+    self.clear_all = tk.Button(self.clearFrame, text="Clear & Log", command = nothing, bg='#C1392B', fg='#F8F8F8', activebackground='#a3382a', activeforeground='#F8F8F8')
     self.clear_all.grid(column=1, row = 0, padx=2, pady=3, sticky='E')
     
 
 
 if __name__ == "__main__":
   
-  root = Tk()
+  root = tk.Tk()
   ws_gui = wsRefresh(root)
   
   root.mainloop()

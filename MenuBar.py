@@ -65,6 +65,7 @@ class MenuBar:
     #Pulls data from the config file to create a list of settings.
     tmp = self.config.return_Raw_Settings()
     for setting in tmp:
+      print(setting)
       panel_options.append(setting)
     ############
     

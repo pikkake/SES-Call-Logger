@@ -10,13 +10,17 @@ class SES:
     theme = {
         "window_bg" : ""
         }
+    window = {
+        'Window' : 'on-top'
+        }
     null = {
         "Null_Value":"Nothing"
         }
     self.master = {
      'User':user,
      'NULL': null,
-     'Theme':theme
+     'Theme':theme,
+     'Window':window
      }
   def returnMaster(self):
     return self.master
