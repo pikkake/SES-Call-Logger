@@ -1,6 +1,6 @@
 import os
 from util import openJSON, writeJSON
-import etc.WS_Esign as ws
+import etc.SES as ses
 
 class setting_Data:
   """
@@ -11,7 +11,9 @@ class setting_Data:
   path = "config\\config.json"
   JSON = {}
   User = {}
-  reset = ws.WS_Esign() #Replace with any other module that creates a dict for settings.
+  #####################################
+  reset = ses.WS_Esign() #Replace with any other module that creates a dict for settings.
+  #####################################
   
   def __init__(self, file_stream = "config\\config.json"):
 
