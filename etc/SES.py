@@ -16,6 +16,8 @@ class SES:
     null = {
         "Null_Value":"Nothing"
         }
+    
+    
     self.master = {
      'User':user,
      'NULL': null,
