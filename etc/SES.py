@@ -7,12 +7,17 @@ class SES:
       "Initials":"",
       "Emp_Num": 0    
     }
+    
     theme = {
-        "window_bg" : ""
+      'banner_color' : '#3B4483',
+      'bg_theme' : '#E1E1E1',
+      'fg_theme' : 'black',
+      'button_bg' : '#dedede',
+      'button_fg' : 'black',
+      'button_active_bg' : '#c9c9c9',
+      'button_active_fg' : 'black'
         }
-    window = {
-        'Window' : 'on-top'
-        }
+
     null = {
         "Null_Value":"Nothing"
         }
@@ -20,9 +25,9 @@ class SES:
     
     self.master = {
      'User':user,
-     'NULL': null,
      'Theme':theme,
-     'Window':window
+     'NULL': null
+     
      }
   def returnMaster(self):
     return self.master
