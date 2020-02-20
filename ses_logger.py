@@ -18,12 +18,12 @@ def nothing():
 Store: XXXX
 Patch Panel Switch X
 Core Port:XX MAC: XXXXXXXXXXXX
-Patch Panel Switch X
-Access Point 1: 2d931 Port: XX MAC: XXXXXXXXXXXX
-Access Point 2: 2d932 Port: XX MAC: XXXXXXXXXXXX
 
-Access Point 3: 2d933 Port: XX MAC: XXXXXXXXXXXX
-Access Point 4: 2d934 Port: XX MAC: XXXXXXXXXXXX
+A1: 2d931 Port: XX MAC: XXXXXXXXXXXX
+A2: 2d932 Port: XX MAC: XXXXXXXXXXXX
+
+A3: 2d933 Port: XX MAC: XXXXXXXXXXXX
+A4: 2d934 Port: XX MAC: XXXXXXXXXXXX
 
 Tech: XXX-XXX-XXXX
 
@@ -34,11 +34,10 @@ class SES_Logger:
   ##############################################################
   APP_TITLE = "SES-Call-Logger v.1"
   MIN_APP_WIDTH = 600
-  MIN_APP_HEIGHT = 400  #420 for footer inclusion
+  MIN_APP_HEIGHT = 450  #420 for footer inclusion
   BANNER_SEPARATOR = 70
 
-  employee_code = ""
-  employee_initials = ""
+
   
   ##############################################################
 
@@ -61,22 +60,18 @@ class SES_Logger:
     self.root.wm_attributes("-topmost",1)
     
     try:
-      self.initializeTheme()
-      self.initializeTextVariables()
-      self.create_Banner(root)
-      self.create_CenterFrame(root)
+      self.initializeFrames()
       
     except Exception as e:
       """
       Check for any errors, mostly the TclError given when a color is nonexistent.
       """
-      self.initializeTheme(True)
-      self.create_Banner(root, 0, 0)
-      self.create_CenterFrame(root)
+      self.initializeFrames(True)
 
       print(e)
       
   def initializeTheme(self, reset = False):
+    
     try:
       assert reset == False
       theme = self.menu.return_Settings()['Theme']
@@ -103,13 +98,19 @@ class SES_Logger:
     store = tk.StringVar()
     name = tk.StringVar()
     phone = tk.StringVar()
+    core = tk.StringVar()
     
     self.var = {
         'store':store,
         'name':name,
-        'phone':phone
-        
+        'phone':phone,
+        'core':core
         }
+  def initializeFrames(self, reset= False):
+    self.initializeTheme(reset)
+    self.initializeTextVariables()
+    self.create_Banner(root)
+    self.create_CenterFrame(root)
     
   def create_Banner(self, root, col=0, row=0):
     """
@@ -139,14 +140,15 @@ class SES_Logger:
     center_Frame = tk.Frame(root, bg = self.bg_theme)
     center_Frame.grid(column= 0, row= row, sticky='nsew', padx= 3, pady= 5)
     
-    self.create_SES_Form(center_Frame)
-    
-  def create_SES_Form(self, centerFrame):
+    self.create_SES_Form(center_Frame, 0, 0)
+    self.create_Textbox_Frames(center_Frame, 1, 0)
+  def create_SES_Form(self, centerFrame, col, row):
     form_Master_Frame = tk.Frame(centerFrame, bg = self.bg_theme)
-    form_Master_Frame.grid(column= 0, row= 0)
+    form_Master_Frame.grid(column= col, row= row, sticky='nsew')
     
     caller_info = tk.Frame(form_Master_Frame, bg= self.bg_theme)
     core_and_panel= tk.Frame(form_Master_Frame)
+    ap_Panel = tk.Frame(form_Master_Frame)
     ap_1 = tk.Frame(form_Master_Frame)
     ap_2 = tk.Frame(form_Master_Frame)
     ap_3 = tk.Frame(form_Master_Frame)
@@ -167,6 +169,7 @@ class SES_Logger:
     frame_List = [
         caller_info,
         core_and_panel,
+        ap_Panel,
         ap_List
         ]
     
@@ -174,7 +177,7 @@ class SES_Logger:
     #ap_List needs to be iterated since it's essentially repeating itself.
     i= 0
     for frame in frame_List:
-      if i < 2:
+      if i < 3:
         frame.config(bg= self.bg_theme)
         frame.grid(column= 0, row= i, sticky= 'nsew')
       i+= 1
@@ -200,8 +203,78 @@ class SES_Logger:
       i+= 1
     ####################################################
     
+    # core_and_panel ###################################
+    """
+    Move core and panel info into the scrollbox module.  
+    Replace w/ switch and gen network info.
+    Dropbox for IDF, MDF
     
+    """
+    
+    core_Frame = tk.LabelFrame(core_and_panel, text= 'Core:', bg = self.bg_theme)
+    core_Frame.grid()
+    
+    core_MAC_Label = tk.Label(core_Frame, text = 'MAC:' )
+    core_Port_Label = tk.Label(core_Frame, text= 'Port:')     
+    
+    core_MAC = tk.Entry(core_Frame, width = 16)
+    core_Port = tk.Entry(core_Frame, width = 4)
+    
+    i= 0
+    for label, entry in zip([core_MAC_Label, core_Port_Label], [core_MAC, core_Port]):
+      label.config(bg= self.bg_theme)
+      label.grid(column= 0, sticky= 'w')
+      
+      entry.grid(column= 1, row= i, sticky= 'w')
+      if i == 1:
+        label.config(pady= 2)
+      i+= 1
+    
+    ####################################################
+    
+    
+    # AP's #############################################
+    ap_Frame = tk.LabelFrame(ap_Panel, text= "Access Point Info", bg= self.bg_theme)
+    ap_Frame.grid(sticky= 'nw')
+    
+    self.scrollFrame= VerticalScrolledFrame(ap_Frame )  #Scrollable frame
 
+    ap_frame_list= []
+    for i in range(6):
+      tmp = tk.LabelFrame(self.scrollFrame.interior, text= 'AP '+str(i+1), bg= self.bg_theme)
+      cable_Label = tk.Entry(tmp, width= 8)
+      cable_Label.insert(tk.END, '93'+str(i+1))
+      
+      port_Label = tk.Label(tmp, text= 'Port:')
+      mac_Label = tk.Label(tmp, text= 'MAC:')
+      
+      port = tk.Entry(tmp, width= 4)
+      mac = tk.Entry(tmp, width= 16)
+      
+      j = 0
+      for label in [cable_Label, port_Label, mac_Label]:
+        label.config(bg= self.bg_theme)
+        label.grid(column= 0, row= j, sticky= 'nw')
+        j+= 1
+      j= 1  
+      for entry in [port, mac]:
+        entry.grid(column=1, row= j, sticky= 'nw')
+        j+= 1
+      ap_frame_list.append(tmp)
+      ap_frame_list[-1].grid()
+ 
+    self.scrollFrame.grid()
+    
+    ####################################################
+  def create_Textbox_Frames(self, centerFrame, col, row):
+    txtBox_Master_Frame = tk.Frame(centerFrame, bg = self.bg_theme)
+    txtBox_Master_Frame.grid(column= col, row= row, sticky='nsew', padx= 5)
+    
+    note_Frame = tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'Notes')
+    note_Frame.grid(column= 0, row= 0, sticky='nsew')
+    
+    txt = tk.scrolledtext.ScrolledText(note_Frame, width= 47, height= 10, padx= 5, wrap=tk.WORD)
+    txt.grid()
   def KDS_Changer_TS(self):
     #msg = "KDS Timestamp copied to clipboard"
     initials = self.menu.return_Settings()['User']['Initials']
@@ -213,9 +286,105 @@ class SES_Logger:
     initials = self.menu.return_Settings()['User']['Initials']
     clipboard = strftime("%m/%d @%I:%M%p ("+initials+") ", localtime())
     copy(clipboard)    
+    
+# ************************
+# Scrollable Frame Class
+# ************************
+# http://tkinter.unpythonic.net/wiki/VerticalScrolledFrame
+
+class VerticalScrolledFrame(tk.Frame):
+    """A pure Tkinter scrollable frame that actually works!
+    * Use the 'interior' attribute to place widgets inside the scrollable frame
+    * Construct and pack/place/grid normally
+    * This frame only allows vertical scrolling
+    """
+    focused = False
+    def __init__(self, parent, *args, **kw):
+        
+        tk.Frame.__init__(self, parent, *args, **kw)
+
+        # create a canvas object and a vertical scrollbar for scrolling it
+        vscrollbar = tk.Scrollbar(self, orient=tk.VERTICAL)
+        vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
+        canvas = tk.Canvas(self, bd=0, highlightthickness=0,
+                        yscrollcommand=vscrollbar.set)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
+        vscrollbar.config(command=canvas.yview)
+        
+        
+
+        # reset the view
+        canvas.xview_moveto(0)
+        canvas.yview_moveto(0)
+
+        # create a frame inside the canvas which will be scrolled with it
+        self.interior = interior = tk.Frame(canvas)
+        interior_id = canvas.create_window(0, 0, window=interior,
+                                           anchor=tk.NW)
+        
+        def _on_leave(event):
+          self.focused = False
+        interior.bind('<Leave>', _on_leave)
+        def _on_enter(event):
+          self.focused = True
+        interior.bind("<Enter>", _on_enter)
+        def _on_mousewheel(event):
+          if(self.focused):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        self.interior.bind_all("<MouseWheel>", _on_mousewheel)
+
+        # track changes to the canvas and frame width and sync them,
+        # also updating the scrollbar
+        def _configure_interior(event):
+            # update the scrollbars to match the size of the inner frame
+            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
+            canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() != canvas.winfo_width():
+                # update the canvas's width to fit the inner frame
+                canvas.config(width=interior.winfo_reqwidth())
+        interior.bind('<Configure>', _configure_interior)
+
+        def _configure_canvas(event):
+            if interior.winfo_reqwidth() != canvas.winfo_width():
+                # update the inner frame's width to fill the canvas
+                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
+        canvas.bind('<Configure>', _configure_canvas)
+
 if __name__ == "__main__":
   
   root = tk.Tk()
   ws_gui = SES_Logger(root)
   
   root.mainloop()
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
