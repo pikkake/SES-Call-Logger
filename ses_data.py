@@ -32,15 +32,38 @@ class ses_data:
       'port',
       'mac',
       ]
+  ###########
   widgets = {}
+  textboxes = {}
   variables = {}
+  output_Buffer = {}
+  ###########
+  
   num_of_aps = 0
   
   def __init__(self, root, num_of_aps):
     self.num_of_aps = num_of_aps
     
-    self.reset_Variables()  
+    self.reset_Variables()
     
+    def create_Output_Buffer():
+      for key in self.data_Keys:
+        tmp = {key: ''}
+        self.output_Buffer.update(tmp)
+        
+      i= 0
+      while i < self.num_of_aps:
+        ap_name = 'ap_' + str(i+i)
+        tmp = {}
+        for key in self.ap_Keys:
+          tmp_dict = {key:''}
+          tmp.update(tmp_dict)
+        
+        tmp_dict = {ap_name: tmp}
+        self.output_Buffer.update(tmp_dict)
+        
+        i+=1
+    create_Output_Buffer()
     
     
   
@@ -75,26 +98,23 @@ class ses_data:
       
       i+= 1
   
-  def _show_value(self, key, widget, *args):
-    print(widget.get())
-
-  def var_listen(self, *args):
-    """
-    Use the input of the above and below functions to control what happens next.  
-    MUST bind them initially in ses_logger
-    """
-    print(args)
-    self._show_value()
-    pass
+  def update_Output_Textbox(self, key, widget, *args):
+    
+    def output():
+      self.textboxes['output'].insert(tk.END, widget.get())
+    output()
   def assign_Widget_From_SES_Logger(self, key, widget):
     widget.config(textvariable = self.variables[key])
     tmp = {'key':widget}
     self.widgets.update(tmp)
     
-    self.variables[key].trace('w', lambda *args: self._show_value(key, widget, *args))
+    self.variables[key].trace('w', lambda *args: self.update_Output_Textbox(key, widget, *args))
 
     pass
   
+  def assign_TextBox_From_SES_Logger(self, key, textbox):
+    tmp = {key: textbox}
+    self.textboxes.update(tmp)
     
     
     

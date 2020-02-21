@@ -186,7 +186,9 @@ class SES_Logger:
     ## THIS WORKS
     
     name = tk.Entry(caller_info, width=20, textvariable= self.vars.variables['name'])
+    self.vars.assign_Widget_From_SES_Logger('name', name)
     phone = tk.Entry(caller_info, width=16, textvariable= self.vars.variables['phone'])
+    self.vars.assign_Widget_From_SES_Logger('phone', phone)
     
     i= 0
     for label, entry in zip([store_Label, name_Label, phone_Label],[store, name, phone]):
@@ -289,20 +291,22 @@ class SES_Logger:
     
     #Notepad text area
     note_Frame = tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'Notes', borderwidth= 0)  
-    self.notes = scrolledtext.ScrolledText(note_Frame, width= 47, height= 10, padx= 5, wrap=tk.WORD)
-    self.notes.grid()
+    notes = scrolledtext.ScrolledText(note_Frame, width= 47, height= 10, padx= 5, wrap=tk.WORD)
+    notes.grid()
+    self.vars.assign_TextBox_From_SES_Logger('notes', notes)      #Assign to instanced variable inside ses_data
     
     #buttons TBA
     
     #Format (POTENTIAL) output text area
     formatted_Frame= tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'SES Info', borderwidth= 0, height= 150)
     formatted_Frame.grid_propagate(False)
-    self.formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 30, height= 10, padx= 5, wrap= tk.WORD)
-    self.formatted_Output.grid()
-    
+    formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 30, height= 10, padx= 5, wrap= tk.WORD)
+    formatted_Output.grid()
+    self.vars.assign_TextBox_From_SES_Logger('output', formatted_Output)      #Assign to instanced variable inside ses_data
     
     #place frames 
     note_Frame.grid(column= 0, row= 0, sticky='nsew')
+    
     formatted_Frame.grid(column= 0, row= 1, sticky= 'nsew')
     
     
