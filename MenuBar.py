@@ -46,7 +46,7 @@ class MenuBar:
     
     #Settings button runs the openSettings function
     self.menuBar.add_command(label="Settings", command=self.openSettings)
-
+    
     
     #Add menu to root/the main window
     self.root.config(menu=self.menuBar)

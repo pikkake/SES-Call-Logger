@@ -2,10 +2,10 @@
 
 import tkinter as tk
 from tkinter import scrolledtext
+import ses_data as ses
 from MenuBar import MenuBar
 from time import localtime, strftime
 from pyperclip import copy
-import os
 
 #https://likegeeks.com/python-gui-examples-tkinter-tutorial/
 #https://effbot.org/tkinterbook/tkinter-application-windows.htm
@@ -32,10 +32,11 @@ Check-out Code: 10123XXXX
 """
 class SES_Logger:
   ##############################################################
-  APP_TITLE = "SES-Call-Logger v.1"
+  APP_TITLE = "SES Call Logger v0.4"
   MIN_APP_WIDTH = 600
   MIN_APP_HEIGHT = 450  #420 for footer inclusion
   BANNER_SEPARATOR = 70
+  NUM_OF_APS = 4
 
 
   
@@ -53,7 +54,8 @@ class SES_Logger:
     root.resizable(width = tk.FALSE, height = tk.FALSE)
     
     self.menu = MenuBar(root)
-
+    self.vars = ses.ses_data(root, self.NUM_OF_APS)
+    
     self.dim = "{}x{}".format(self.MIN_APP_WIDTH, self.MIN_APP_HEIGHT)
     self.root.geometry(self.dim)
     self.root.title(self.APP_TITLE)
@@ -93,19 +95,8 @@ class SES_Logger:
       
     self.root.config(bg= self.bg_theme)
   def initializeTextVariables(self):
-    self.var = {}
-    
-    store = tk.StringVar()
-    name = tk.StringVar()
-    phone = tk.StringVar()
-    core = tk.StringVar()
-    
-    self.var = {
-        'store':store,
-        'name':name,
-        'phone':phone,
-        'core':core
-        }
+    pass
+      
   def initializeFrames(self, reset= False):
     self.initializeTheme(reset)
     self.initializeTextVariables()
@@ -143,6 +134,8 @@ class SES_Logger:
     self.create_SES_Form(center_Frame, 0, 0)
     self.create_Textbox_Frames(center_Frame, 1, 0)
   def create_SES_Form(self, centerFrame, col, row):
+    scrollBoxWidth = 160
+    
     form_Master_Frame = tk.Frame(centerFrame, bg = self.bg_theme)
     form_Master_Frame.grid(column= col, row= row, sticky='nsew')
     
@@ -188,9 +181,12 @@ class SES_Logger:
     name_Label = tk.Label(caller_info, text= 'Name:')
     phone_Label = tk.Label(caller_info, text= 'Phone:')
     
-    store = tk.Entry(caller_info, width=5, textvariable= self.var['store'])
-    name = tk.Entry(caller_info, width=20, textvariable= self.var['name'])
-    phone = tk.Entry(caller_info, width=16, textvariable= self.var['phone'])
+    store = tk.Entry(caller_info, width=5, textvariable= self.vars.variables['store'])
+    self.vars.assign_Widget_From_SES_Logger('store', store)
+    ## THIS WORKS
+    
+    name = tk.Entry(caller_info, width=20, textvariable= self.vars.variables['name'])
+    phone = tk.Entry(caller_info, width=16, textvariable= self.vars.variables['phone'])
     
     i= 0
     for label, entry in zip([store_Label, name_Label, phone_Label],[store, name, phone]):
@@ -204,24 +200,35 @@ class SES_Logger:
     ####################################################
     
     # core_and_panel ###################################
-    """
-    Move core and panel info into the scrollbox module.  
-    Replace w/ switch and gen network info.
-    Dropbox for IDF, MDF
     
-    """
     
-    core_Frame = tk.LabelFrame(core_and_panel, text= 'Core:', bg = self.bg_theme)
-    core_Frame.grid()
+    ####################################################
     
-    core_MAC_Label = tk.Label(core_Frame, text = 'MAC:' )
-    core_Port_Label = tk.Label(core_Frame, text= 'Port:')     
     
-    core_MAC = tk.Entry(core_Frame, width = 16)
-    core_Port = tk.Entry(core_Frame, width = 4)
+    # AP's #############################################
+    ap_Frame = tk.LabelFrame(ap_Panel, bg= self.bg_theme)
+    ap_Frame.grid(sticky= 'nw', pady= 2)
+    
+    self.scrollFrame= VerticalScrolledFrame(ap_Frame, 340)  #Scrollable frame
+
+    ap_frame_list= []
+    
+    ### Core
+    core_FrameLabel = tk.LabelFrame(self.scrollFrame.interior, text= 'Core:', bg = self.bg_theme)
+    core_FrameLabel.grid()
+    core_FrameInner = tk.Frame(core_FrameLabel, bg= self.bg_theme, width= scrollBoxWidth, height= 50)
+    core_FrameInner.grid_propagate(False)
+    core_FrameInner.grid()
+    
+    core_MAC_Label = tk.Label(core_FrameInner, text = 'MAC:')
+    core_Port_Label = tk.Label(core_FrameInner, text= 'Port:')     
+    
+    core_MAC = tk.Entry(core_FrameInner, width = 16, textvariable= self.vars.variables['core_mac'])
+    core_Port = tk.Entry(core_FrameInner, width = 4, textvariable= self.vars.variables['core_port'])
+    ###
     
     i= 0
-    for label, entry in zip([core_MAC_Label, core_Port_Label], [core_MAC, core_Port]):
+    for label, entry in zip([core_Port_Label, core_MAC_Label], [core_Port, core_MAC]):
       label.config(bg= self.bg_theme)
       label.grid(column= 0, sticky= 'w')
       
@@ -231,30 +238,40 @@ class SES_Logger:
       i+= 1
     
     ####################################################
+    """
+    Create i frames, i == number of APs designated on load.
+    Creates a frame within the LabelFrame to control the inner padding/style.
+    textvariables are assigned through self.vars.variables.
     
-    
-    # AP's #############################################
-    ap_Frame = tk.LabelFrame(ap_Panel, text= "Access Point Info", bg= self.bg_theme)
-    ap_Frame.grid(sticky= 'nw')
-    
-    self.scrollFrame= VerticalScrolledFrame(ap_Frame )  #Scrollable frame
-
-    ap_frame_list= []
-    for i in range(6):
-      tmp = tk.LabelFrame(self.scrollFrame.interior, text= 'AP '+str(i+1), bg= self.bg_theme)
-      cable_Label = tk.Entry(tmp, width= 8)
-      cable_Label.insert(tk.END, '93'+str(i+1))
+    """
+    for i in range(self.NUM_OF_APS):
+      master = tk.LabelFrame(self.scrollFrame.interior, text= 'AP '+str(i+1), bg= self.bg_theme)
+      tmp = tk.Frame(master, bg= self.bg_theme, width= scrollBoxWidth, height= 70)
+      tmp.grid_propagate(False)
+      
+      master.grid()
+      tmp.grid()
+      
+      ap = 'ap_' + str(i+1)       #name of the ap, thrown into the self.vars object
+      
+      self.vars.variables[ap]['cable'].set('2d93' + str(i+1))
+      
+      cable_Label = tk.Entry(tmp, width= 6, textvariable = self.vars.variables[ap]['cable'])
+      
       
       port_Label = tk.Label(tmp, text= 'Port:')
       mac_Label = tk.Label(tmp, text= 'MAC:')
       
-      port = tk.Entry(tmp, width= 4)
-      mac = tk.Entry(tmp, width= 16)
+      port = tk.Entry(tmp, width= 4, textvariable = self.vars.variables[ap]['port'])
+      mac = tk.Entry(tmp, width= 16, textvariable = self.vars.variables[ap]['mac'])
       
       j = 0
       for label in [cable_Label, port_Label, mac_Label]:
         label.config(bg= self.bg_theme)
-        label.grid(column= 0, row= j, sticky= 'nw')
+        if j == 0:
+          label.grid(column= 0, row= j, sticky= 'nw', padx= 2, pady= 2)
+        else:
+          label.grid(column= 0, row= j, sticky= 'nw')
         j+= 1
       j= 1  
       for entry in [port, mac]:
@@ -270,11 +287,26 @@ class SES_Logger:
     txtBox_Master_Frame = tk.Frame(centerFrame, bg = self.bg_theme)
     txtBox_Master_Frame.grid(column= col, row= row, sticky='nsew', padx= 5)
     
-    note_Frame = tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'Notes')
-    note_Frame.grid(column= 0, row= 0, sticky='nsew')
+    #Notepad text area
+    note_Frame = tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'Notes', borderwidth= 0)  
+    self.notes = scrolledtext.ScrolledText(note_Frame, width= 47, height= 10, padx= 5, wrap=tk.WORD)
+    self.notes.grid()
     
-    txt = tk.scrolledtext.ScrolledText(note_Frame, width= 47, height= 10, padx= 5, wrap=tk.WORD)
-    txt.grid()
+    #buttons TBA
+    
+    #Format (POTENTIAL) output text area
+    formatted_Frame= tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'SES Info', borderwidth= 0, height= 150)
+    formatted_Frame.grid_propagate(False)
+    self.formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 30, height= 10, padx= 5, wrap= tk.WORD)
+    self.formatted_Output.grid()
+    
+    
+    #place frames 
+    note_Frame.grid(column= 0, row= 0, sticky='nsew')
+    formatted_Frame.grid(column= 0, row= 1, sticky= 'nsew')
+    
+    
+    
   def KDS_Changer_TS(self):
     #msg = "KDS Timestamp copied to clipboard"
     initials = self.menu.return_Settings()['User']['Initials']
@@ -299,7 +331,7 @@ class VerticalScrolledFrame(tk.Frame):
     * This frame only allows vertical scrolling
     """
     focused = False
-    def __init__(self, parent, *args, **kw):
+    def __init__(self, parent, canvasHeight, *args, **kw):
         
         tk.Frame.__init__(self, parent, *args, **kw)
 
@@ -307,7 +339,7 @@ class VerticalScrolledFrame(tk.Frame):
         vscrollbar = tk.Scrollbar(self, orient=tk.VERTICAL)
         vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
         canvas = tk.Canvas(self, bd=0, highlightthickness=0,
-                        yscrollcommand=vscrollbar.set)
+                        yscrollcommand=vscrollbar.set, height= canvasHeight)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
         vscrollbar.config(command=canvas.yview)
         
