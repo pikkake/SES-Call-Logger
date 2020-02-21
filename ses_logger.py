@@ -226,7 +226,9 @@ class SES_Logger:
     core_Port_Label = tk.Label(core_FrameInner, text= 'Port:')     
     
     core_MAC = tk.Entry(core_FrameInner, width = 16, textvariable= self.vars.variables['core_mac'])
+    self.vars.assign_Widget_From_SES_Logger('core_mac', core_MAC)
     core_Port = tk.Entry(core_FrameInner, width = 4, textvariable= self.vars.variables['core_port'])
+    self.vars.assign_Widget_From_SES_Logger('core_port', core_Port)
     ###
     
     i= 0
@@ -256,9 +258,10 @@ class SES_Logger:
       
       ap = 'ap_' + str(i+1)       #name of the ap, thrown into the self.vars object
       
-      self.vars.variables[ap]['cable'].set('2d93' + str(i+1))
+      #self.vars.variables[ap]['cable'].set('2d93' + str(i+1))
       
       cable_Label = tk.Entry(tmp, width= 6, textvariable = self.vars.variables[ap]['cable'])
+
       
       
       port_Label = tk.Label(tmp, text= 'Port:')
@@ -270,8 +273,9 @@ class SES_Logger:
       j = 0
       for label in [cable_Label, port_Label, mac_Label]:
         label.config(bg= self.bg_theme)
-        if j == 0:
+        if j == 0: #not a label, entry field
           label.grid(column= 0, row= j, sticky= 'nw', padx= 2, pady= 2)
+          self.vars.assign_Widget_From_SES_Logger('cable', label, "ap_"+str(i+1))
         else:
           label.grid(column= 0, row= j, sticky= 'nw')
         j+= 1
@@ -300,7 +304,7 @@ class SES_Logger:
     #Format (POTENTIAL) output text area
     formatted_Frame= tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'SES Info', borderwidth= 0, height= 150)
     formatted_Frame.grid_propagate(False)
-    formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 30, height= 10, padx= 5, wrap= tk.WORD)
+    formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 47, height= 10, padx= 5, wrap= tk.WORD)
     formatted_Output.grid()
     self.vars.assign_TextBox_From_SES_Logger('output', formatted_Output)      #Assign to instanced variable inside ses_data
     
