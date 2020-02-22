@@ -279,9 +279,14 @@ class SES_Logger:
         else:
           label.grid(column= 0, row= j, sticky= 'nw')
         j+= 1
-      j= 1  
+      j = 1
       for entry in [port, mac]:
         entry.grid(column=1, row= j, sticky= 'nw')
+        if j == 1:
+          
+          self.vars.assign_Widget_From_SES_Logger('port', entry, "ap_"+str(i+1))
+        if j == 2:
+          self.vars.assign_Widget_From_SES_Logger('mac', entry, "ap_"+str(i+1))
         j+= 1
       ap_frame_list.append(tmp)
       ap_frame_list[-1].grid()

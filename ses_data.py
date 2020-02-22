@@ -113,59 +113,51 @@ class ses_data:
       except:
         return phone   
       
-    def format_Buffer():
+    def format_Buffer(ap_key):
       widget_input = widget.get().strip()
-      if ap_key != '':
-        #Tests if the given input is from an AP frame.
-        self.output_Buffer[key] = widget_input
+      try:
+        assert ap_key == ''    #Thows an AssertionError if the ap_key isn't empty (is created on an AP entry widget).
+        #self.output_Buffer[key] = widget_input
         
-      #iterates through every line of the output_Buffer to update the key-value.
-      #It's easier to manage if in a loop
-      for line in self.output_Buffer:
-        try:
-          assert not isinstance(self.output_Buffer[line], dict)    #Tests if the value from the given key is a dict.  Normally is false.
-          if widget_input != '':
+        if widget_input != '':
             
-            buffer = ''
-            if key == 'store':
-              buffer = 'S-' + widget_input
-            elif key == 'name':
-              tmp = widget_input.split(" ")
-              if tmp[0].upper() == 'MOD':
-                buffer = 'Name: MOD'
-                i= 1
-                while i < len(tmp):
-                  buffer+= " " + tmp[i].title()
-                  i+= 1
-              else:
-                buffer = 'Name: '+ widget_input.title()
-            elif key == 'phone':
-              buffer = 'Phone: ' + format_Phone(widget_input)
-            elif key == 'core_port':
-              buffer = 'Core Port: ' + widget_input 
-            elif key == 'core_mac':
-              buffer = 'MAC: ' + formatMAC(widget_input) 
+          buffer = ''
+          if key == 'store':
+            buffer = 'S-' + widget_input
+          elif key == 'name':
+            tmp = widget_input.split(" ")
+            if tmp[0].upper() == 'MOD':
+              buffer = 'Name: MOD'
+              i= 1
+              while i < len(tmp):
+                buffer+= " " + tmp[i].title()
+                i+= 1
+            else:
+              buffer = 'Name: '+ widget_input.title()
+          elif key == 'phone':
+            buffer = 'Phone: ' + format_Phone(widget_input)
+          elif key == 'core_port':
+            buffer = 'Core Port: ' + widget_input 
+          elif key == 'core_mac':
+            buffer = 'MAC: ' + formatMAC(widget_input) 
             
-            self.output_Buffer[key] = buffer
-          elif widget_input == '':          #If Entry widget is empty
-            self.output_Buffer[key] = ''
-            break
+          self.output_Buffer[key] = buffer
+        elif widget_input == '':          #If Entry widget is empty
+          self.output_Buffer[key] = ''
+          
             
-        except AssertionError:              #If the value is a dict, it must be the APs.
-          if ap_key != "":
-            buffer = ''
-            for line in self.output_Buffer[ap_key]:
-                print(line)
-                print(ap_key)
-              
-              
-            #print("AP")
-            pass
-        except RuntimeError as e:
-          print(e)
-        finally:
-          #print(self.output_Buffer)
-          pass
+      except AssertionError:              #If the value is a dict, it must be the APs.
+        if widget_input != '':
+          buffer = ''
+          if key == 'cable':
+            buffer = " " + widget_input
+          elif key == 'port':
+            buffer = " Port: " + widget_input
+          elif key == 'mac':
+            buffer = " MAC: " + formatMAC(widget_input)
+          self.output_Buffer[ap_key][key] = buffer
+        elif widget_input == '':
+          self.output_Buffer[ap_key][key] = ''
       
     def output_Buffer():
       self.textboxes['output'].delete('1.0', tk.END)
@@ -181,10 +173,20 @@ class ses_data:
             else:
               self.textboxes['output'].insert(tk.END, "\n"+tmp)
           except AssertionError:
-            pass
-        
+            """
+            Fix this later, it keeps resetting the field and outputs x lines of the same output.
+            
+            """
+            tmp = ap_key.split('_')
+            ap_Name = tmp[0].upper()+ " "+ tmp[1] + ":"
+            buffer = ap_Name
+            for ap_value in self.output_Buffer[ap_key]:
+              if self.output_Buffer[ap_key][ap_value] != '':
+                buffer += self.output_Buffer[ap_key][ap_value]
+            self.textboxes['output'].insert(tk.END, buffer+"\n")
+            
       
-    format_Buffer()
+    format_Buffer(ap_key)
     output_Buffer()
     
   def assign_Widget_From_SES_Logger(self, key, widget, ap_key = ""):
@@ -193,7 +195,7 @@ class ses_data:
       tmp = {key:widget}
       self.widgets.update(tmp)
     
-      self.variables[key].trace('w', lambda *args: self.update_Output_Textbox(key, widget, *args))
+      self.variables[key].trace('w', lambda *args: self.update_Output_Textbox(key, widget, "", *args))
     else:
       widget.config(textvariable = self.variables[ap_key][key])
       tmp = {ap_key:{key: widget}}
