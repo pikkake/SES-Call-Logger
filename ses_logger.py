@@ -14,30 +14,15 @@ from pyperclip import copy
 def nothing():
   pass
 
-"""
-Store: XXXX
-Patch Panel Switch X
-Core Port:XX MAC: XXXXXXXXXXXX
-
-A1: 2d931 Port: XX MAC: XXXXXXXXXXXX
-A2: 2d932 Port: XX MAC: XXXXXXXXXXXX
-
-A3: 2d933 Port: XX MAC: XXXXXXXXXXXX
-A4: 2d934 Port: XX MAC: XXXXXXXXXXXX
-
-Tech: XXX-XXX-XXXX
-
-Check-out Code: 10123XXXX
-
-"""
 class SES_Logger:
   ##############################################################
-  APP_TITLE = "SES Call Logger v0.4"
+  APP_TITLE = "SES Call Logger v0.7"
   MIN_APP_WIDTH = 600
-  MIN_APP_HEIGHT = 450  #420 for footer inclusion
+  MIN_APP_HEIGHT = 450  
   BANNER_SEPARATOR = 70
-  NUM_OF_APS = 4
-
+  NUM_OF_APS = 5
+  
+  VERTICAL_SCROLL_FRAME_HEIGHT = 340      #340
 
   
   ##############################################################
@@ -123,9 +108,9 @@ class SES_Logger:
     clear_Button_Frame = tk.Frame(banner_Bar, bg = self.banner_color)
     clear_Button_Frame.grid(column=3, row = 0, padx=15, sticky='nsew')
     
-    clear_only = tk.Button(clear_Button_Frame, text="Clear Only", command = nothing, bg='#ebdb34', fg='#0d0d0c', activebackground='#ccbe2d', activeforeground='#0d0d0c')
+    clear_only = tk.Button(clear_Button_Frame, text="Clear Only", command = self.vars.clear_All_Fields, bg='#ebdb34', fg='#0d0d0c', activebackground='#ccbe2d', activeforeground='#0d0d0c')
     clear_only.grid(column=0, row = 0, padx=18, sticky='E')
-    clear_all = tk.Button(clear_Button_Frame, text="Clear & Log", command = nothing, bg='#C1392B', fg='#F8F8F8', activebackground='#a3382a', activeforeground='#F8F8F8')
+    clear_all = tk.Button(clear_Button_Frame, text="Clear & Log", command = self.vars.clear_And_Log, bg='#C1392B', fg='#F8F8F8', activebackground='#a3382a', activeforeground='#F8F8F8')
     clear_all.grid(column=1, row = 0, padx=2, pady=3, sticky='E')
   def create_CenterFrame(self, root, col= 0, row= 1):
     center_Frame = tk.Frame(root, bg = self.bg_theme)
@@ -142,37 +127,21 @@ class SES_Logger:
     caller_info = tk.Frame(form_Master_Frame, bg= self.bg_theme)
     core_and_panel= tk.Frame(form_Master_Frame)
     ap_Panel = tk.Frame(form_Master_Frame)
-    ap_1 = tk.Frame(form_Master_Frame)
-    ap_2 = tk.Frame(form_Master_Frame)
-    ap_3 = tk.Frame(form_Master_Frame)
-    ap_4 = tk.Frame(form_Master_Frame)
-    ap_5 = tk.Frame(form_Master_Frame)
-    ap_6 = tk.Frame(form_Master_Frame)
+
     
-    #List of frames for the AP section of the form.
-    ap_List = [
-        ap_1,
-        ap_2,
-        ap_3,
-        ap_4,
-        ap_5,
-        ap_6,
-        ]
     #List of every Frame & includes the ap_List.
     frame_List = [
         caller_info,
         core_and_panel,
         ap_Panel,
-        ap_List
         ]
     
     #Places each frame EXCEPT ap_List on the grid.  
     #ap_List needs to be iterated since it's essentially repeating itself.
     i= 0
     for frame in frame_List:
-      if i < 3:
-        frame.config(bg= self.bg_theme)
-        frame.grid(column= 0, row= i, sticky= 'nsew')
+      frame.config(bg= self.bg_theme)
+      frame.grid(column= 0, row= i, sticky= 'nsew')
       i+= 1
     
     
@@ -211,7 +180,7 @@ class SES_Logger:
     ap_Frame = tk.LabelFrame(ap_Panel, bg= self.bg_theme)
     ap_Frame.grid(sticky= 'nw', pady= 2)
     
-    self.scrollFrame= VerticalScrolledFrame(ap_Frame, 340)  #Scrollable frame
+    self.scrollFrame= VerticalScrolledFrame(ap_Frame, self.VERTICAL_SCROLL_FRAME_HEIGHT)  #Scrollable frame
 
     ap_frame_list= []
     
@@ -222,11 +191,14 @@ class SES_Logger:
     core_FrameInner.grid_propagate(False)
     core_FrameInner.grid()
     
+    core_Port_Label = tk.Label(core_FrameInner, text= 'Port:') 
     core_MAC_Label = tk.Label(core_FrameInner, text = 'MAC:')
-    core_Port_Label = tk.Label(core_FrameInner, text= 'Port:')     
-    
-    core_MAC = tk.Entry(core_FrameInner, width = 16, textvariable= self.vars.variables['core_mac'])
+        
     core_Port = tk.Entry(core_FrameInner, width = 4, textvariable= self.vars.variables['core_port'])
+    self.vars.assign_Widget_From_SES_Logger('core_port', core_Port)
+    core_MAC = tk.Entry(core_FrameInner, width = 16, textvariable= self.vars.variables['core_mac'])
+    self.vars.assign_Widget_From_SES_Logger('core_mac', core_MAC)
+    
     ###
     
     i= 0
@@ -256,9 +228,10 @@ class SES_Logger:
       
       ap = 'ap_' + str(i+1)       #name of the ap, thrown into the self.vars object
       
-      self.vars.variables[ap]['cable'].set('2d93' + str(i+1))
+      #self.vars.variables[ap]['cable'].set('2d93' + str(i+1))
       
       cable_Label = tk.Entry(tmp, width= 6, textvariable = self.vars.variables[ap]['cable'])
+      self.vars.variables[ap]['cable'].set("2d93"+str(i+1))
       
       
       port_Label = tk.Label(tmp, text= 'Port:')
@@ -270,14 +243,20 @@ class SES_Logger:
       j = 0
       for label in [cable_Label, port_Label, mac_Label]:
         label.config(bg= self.bg_theme)
-        if j == 0:
+        if j == 0: #not a label, entry field
           label.grid(column= 0, row= j, sticky= 'nw', padx= 2, pady= 2)
+          self.vars.assign_Widget_From_SES_Logger('cable', label, "ap_"+str(i+1))
         else:
           label.grid(column= 0, row= j, sticky= 'nw')
         j+= 1
-      j= 1  
+      j = 1
       for entry in [port, mac]:
         entry.grid(column=1, row= j, sticky= 'nw')
+        if j == 1:
+          
+          self.vars.assign_Widget_From_SES_Logger('port', entry, "ap_"+str(i+1))
+        if j == 2:
+          self.vars.assign_Widget_From_SES_Logger('mac', entry, "ap_"+str(i+1))
         j+= 1
       ap_frame_list.append(tmp)
       ap_frame_list[-1].grid()
@@ -300,7 +279,7 @@ class SES_Logger:
     #Format (POTENTIAL) output text area
     formatted_Frame= tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'SES Info', borderwidth= 0, height= 150)
     formatted_Frame.grid_propagate(False)
-    formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 30, height= 10, padx= 5, wrap= tk.WORD)
+    formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 47, height= 8, padx= 5, wrap= tk.WORD)
     formatted_Output.grid()
     self.vars.assign_TextBox_From_SES_Logger('output', formatted_Output)      #Assign to instanced variable inside ses_data
     

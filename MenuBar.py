@@ -12,7 +12,7 @@ class MenuBar:
   
   """
   ###############################################  
-  SETTINGS_HEIGHT = 400       #Height of the settings window
+  SETTINGS_HEIGHT = 357       #Height of the settings window
   SETTINGS_WIDTH = 350        #Width of the settings window
   
   size_of_menu_separator = 172  #Space that pushes the settings button to the right
