@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
+import os
+from time import localtime, strftime
+import etc.setting_Data as sd
 
 
 class ses_data:
@@ -29,7 +32,7 @@ class ses_data:
   def __init__(self, root, num_of_aps):
     self.num_of_aps = num_of_aps
     
-    
+    self.data = sd.setting_Data()
     
     def create_Output_Buffer():
       for key in self.data_Keys:
@@ -50,7 +53,7 @@ class ses_data:
         i+=1
     create_Output_Buffer()
     self.reset_Variables()
-  
+    
   def create_Variables(self, root):
     pass
   def reset_Variables(self):
@@ -92,8 +95,7 @@ class ses_data:
         return mac
       except:
         return mac    
-    
-    
+
     def format_Phone(phone):
       try:
         if len(phone) == 10:
@@ -135,11 +137,11 @@ class ses_data:
             else:
               buffer = 'Name: '+ widget_input.title()
           elif key == 'phone':
-            buffer = 'Phone: ' + format_Phone(widget_input)
+            buffer = 'Phone: ' + format_Phone(widget_input) + "\n"
           elif key == 'core_port':
             buffer = 'Core Port: ' + widget_input 
           elif key == 'core_mac':
-            buffer = 'MAC: ' + formatMAC(widget_input) 
+            buffer = 'MAC: ' + formatMAC(widget_input).upper() 
             
           self.output_Buffer[key] = buffer
         elif widget_input == '':          #If Entry widget is empty
@@ -154,7 +156,7 @@ class ses_data:
           elif key == 'port':
             buffer = " Port: " + widget_input
           elif key == 'mac':
-            buffer = " MAC: " + formatMAC(widget_input)
+            buffer = " MAC: " + formatMAC(widget_input).upper()
           self.output_Buffer[ap_key][key] = buffer
         elif widget_input == '':
           self.output_Buffer[ap_key][key] = ''
@@ -173,33 +175,141 @@ class ses_data:
             else:
               self.textboxes['output'].insert(tk.END, "\n"+tmp)
           except AssertionError:
-            """
-            Fix this later, it keeps resetting the field and outputs x lines of the same output.
-            
-            """
-            tmp = ap_key.split('_')
-            ap_Name = tmp[0].upper()+ " "+ tmp[1] + ":"
-            buffer = ap_Name
-            for ap_value in self.output_Buffer[ap_key]:
-              if self.output_Buffer[ap_key][ap_value] != '':
-                buffer += self.output_Buffer[ap_key][ap_value]
-            self.textboxes['output'].insert(tk.END, buffer+"\n")
-            
-      
+            i = 0
+            buffer = ''
+            while i < self.num_of_aps:
+              ap_name = 'ap_' + str(i+1)
+              ap_form_input = False
+              
+              for form_field in self.output_Buffer[ap_name]:      #boolean to check if any of the form fields are filled
+                if self.output_Buffer[ap_name][form_field] != '':
+                  ap_form_input = True
+                  
+              if ap_form_input:                                   #Lists the name of the AP and its associated cable identifier if any form is filled for the AP.
+                buffer += "\nAP-"+str(i+1) + " "
+                buffer += self.variables[ap_name]['cable'].get().strip()
+                
+              for ap_value in self.output_Buffer[ap_name]:        #Adds to the buffer if any of the form fields are filled
+                if self.output_Buffer[ap_name][ap_value] != '':                                        #Replace later with actual form input
+                  if ap_value == 'port':
+                    buffer+= self.output_Buffer[ap_name][ap_value]
+                  elif ap_value == 'mac':
+                    buffer+= self.output_Buffer[ap_name][ap_value]
+              i+= 1
+            self.textboxes['output'].insert(tk.END, buffer)
+            break     #break from the for loop created before the assertion.
+    
     format_Buffer(ap_key)
     output_Buffer()
     
+  def clear_All_Fields(self):
+    def clear_Widgets():
+      variables = self.variables
+      for var in variables:
+        try:
+          assert not isinstance(variables[var], dict)
+          variables[var].set('')
+        except AssertionError:      #checks for the AP's, as they're assigned as a dict
+          i = 0
+          while i < self.num_of_aps:
+            ap_name = "ap_" + str(i+1)
+            for field in variables[ap_name]:
+              if not field == 'cable':
+                variables[ap_name][field].set('')
+            i+= 1
+    def clear_Buffer():
+      buffer = self.output_Buffer
+      for line in buffer:
+        try:
+          assert not isinstance(buffer[line], dict)
+          buffer[line] = ''
+        except AssertionError:
+          i = 0
+          while i < self.num_of_aps:
+            ap_name = "ap_" + str(i+1)
+            for field in buffer[ap_name]:
+              buffer[ap_name][field] = ''
+            i+= 1
+      self.output_Buffer = buffer
+    def clear_Textboxes():
+      for textbox in self.textboxes:
+        self.textboxes[textbox].delete('1.0', tk.END)
+        
+    clear_Widgets()
+    clear_Buffer()
+    clear_Textboxes()
+    
+  def log_Buffer(self):
+    """
+    First checks if either of the textboxes are occupied; if any are, it begins creating their respective text buffers.
+    If only one is occupied, the rest are given a blank statement to print to the log.
+    
+    """
+    
+    note_Buffer = 'Notes:'
+    call_Buffer = 'Call Info:'
+    log_Ext = self.data.return_Specified_Setting('User')['file_Ext']
+    def write_File(note_Buffer, call_Buffer):
+      buffer = strftime("@%I:%M:%S %p:",localtime())
+      if not os.path.exists('logs'):
+        os.mkdir('logs')
+      
+      path = "logs\\" + strftime("20%y", localtime())
+      if not os.path.exists(path):
+        os.mkdir(path)
+      timestamp = strftime("20%y-%m-%d." + log_Ext, localtime())
+      path+= "\\"+timestamp
+       
+      with open(path, 'a+') as f:
+        buffer += "\n# " + call_Buffer + "\n# " + note_Buffer + "\n\n"
+        f.write(buffer)
+        
+    def check_Output():
+      #Checks if any of the entry fields are filled with text.
+      textbox_is_occupied = False
+      for textbox in self.textboxes:
+        if len(self.textboxes[textbox].get('1.0',tk.END)) > 1:
+          textbox_is_occupied = True
+      return textbox_is_occupied
+      
+    def parse_Notes(note_Buffer):
+      if len(self.textboxes['notes'].get('1.0',tk.END)) > 1:
+        buffer = self.textboxes['notes'].get('1.0',tk.END).strip().split("\n")
+        for line in buffer:
+          note_Buffer+= "\n\t" + line.strip()
+      else:
+        note_Buffer += "\n\tNo notes taken."
+      return note_Buffer
+    
+    def parse_Call_Info(call_Buffer):
+      if len(self.textboxes['output'].get('1.0',tk.END)) > 1:
+        buffer = self.textboxes['output'].get('1.0',tk.END).strip().split("\n")
+        for line in buffer:
+          call_Buffer+= "\n\t" + line.strip()
+      else:
+        call_Buffer += "\n\tNo caller info taken."
+      return call_Buffer
+
+    if check_Output():
+      note_Buffer = parse_Notes(note_Buffer)
+      call_Buffer = parse_Call_Info(call_Buffer)
+      write_File(note_Buffer, call_Buffer)
+    
+    
+  def clear_And_Log(self):
+    self.log_Buffer()
+    self.clear_All_Fields()
   def assign_Widget_From_SES_Logger(self, key, widget, ap_key = ""):
     if ap_key == "":
       widget.config(textvariable = self.variables[key])
-      tmp = {key:widget}
+      tmp = {key:widget}      #not sure if this is needed, but it's nice ig.
       self.widgets.update(tmp)
     
       self.variables[key].trace('w', lambda *args: self.update_Output_Textbox(key, widget, "", *args))
     else:
       widget.config(textvariable = self.variables[ap_key][key])
       tmp = {ap_key:{key: widget}}
-      self.widgets.update(tmp)
+      self.widgets.update(tmp) 
     
       self.variables[ap_key][key].trace('w', lambda *args: self.update_Output_Textbox(key, widget, ap_key, *args))
   
@@ -207,24 +317,6 @@ class ses_data:
     tmp = {key: textbox}
     self.textboxes.update(tmp)
     
-    
-    
-    """
-Store: XXXX
-Patch Panel Switch X
-Core Port:XX MAC: XXXXXXXXXXXX
-
-A1: 2d931 Port: XX MAC: XXXXXXXXXXXX
-A2: 2d932 Port: XX MAC: XXXXXXXXXXXX
-
-A3: 2d933 Port: XX MAC: XXXXXXXXXXXX
-A4: 2d934 Port: XX MAC: XXXXXXXXXXXX
-
-Tech: XXX-XXX-XXXX
-
-Check-out Code: 10123XXXX
-
-"""
     
     
     
