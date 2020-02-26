@@ -19,6 +19,7 @@ class ses_data:
       'cable',
       'port',
       'mac',
+      'check'
       ]
   ###########
   widgets = {}          #Dict of widget pointers
@@ -54,8 +55,6 @@ class ses_data:
     create_Output_Buffer()
     self.reset_Variables()
     
-  def create_Variables(self, root):
-    pass
   def reset_Variables(self):
     self.variables = tmp = {}
 
@@ -63,7 +62,6 @@ class ses_data:
       var = tk.StringVar()
       
       if key == 'core_port':
-        #var.set('183')
         tmp = {key: var}
       else:
         tmp = {key: var}
@@ -76,7 +74,10 @@ class ses_data:
       ap_name = 'ap_' + str(i+1)
       tmp = {}
       for key in self.ap_Keys:
-        var = tk.StringVar()
+        if key == 'check':
+          var = tk.IntVar()
+        else:
+          var = tk.StringVar()
         tmp_dict = {key:var}
         tmp.update(tmp_dict)
       
@@ -116,8 +117,9 @@ class ses_data:
         return phone   
       
     def format_Buffer(ap_key):
-      widget_input = widget.get().strip()
+      
       try:
+        widget_input = widget.get().strip()
         assert ap_key == ''    #Thows an AssertionError if the ap_key isn't empty (is created on an AP entry widget).
         #self.output_Buffer[key] = widget_input
         
@@ -160,7 +162,9 @@ class ses_data:
           self.output_Buffer[ap_key][key] = buffer
         elif widget_input == '':
           self.output_Buffer[ap_key][key] = ''
-      
+      except AttributeError as check:     #If the value is from a Checkbox widget
+        
+        pass
     def output_Buffer():
       self.textboxes['output'].delete('1.0', tk.END)
       for line in self.output_Buffer:
@@ -215,7 +219,11 @@ class ses_data:
             ap_name = "ap_" + str(i+1)
             for field in variables[ap_name]:
               if not field == 'cable':
-                variables[ap_name][field].set('')
+                if field == 'check':
+                  variables[ap_name][field].set(0)
+                else: 
+                  variables[ap_name][field].set('')
+                
             i+= 1
     def clear_Buffer():
       buffer = self.output_Buffer
@@ -302,12 +310,10 @@ class ses_data:
   def assign_Widget_From_SES_Logger(self, key, widget, ap_key = ""):
     if ap_key == "":
       widget.config(textvariable = self.variables[key])
-      tmp = {key:widget}      #not sure if this is needed, but it's nice ig.
-      self.widgets.update(tmp)
     
       self.variables[key].trace('w', lambda *args: self.update_Output_Textbox(key, widget, "", *args))
     else:
-      widget.config(textvariable = self.variables[ap_key][key])
+      #widget.config(textvariable = self.variables[ap_key][key])
       tmp = {ap_key:{key: widget}}
       self.widgets.update(tmp) 
     
@@ -317,7 +323,10 @@ class ses_data:
     tmp = {key: textbox}
     self.textboxes.update(tmp)
     
+  def debug(self):
     
+    
+    pass
     
     
     

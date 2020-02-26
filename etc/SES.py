@@ -5,7 +5,8 @@ class SES:
     user = {
       "Name":"",
       "Initials":"",
-      "Emp_Num": 0    
+      "Emp_Num": 0,
+      "file_Ext": "txt"
     }
     
     theme = {

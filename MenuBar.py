@@ -4,6 +4,7 @@ import etc.setting_Data as sd
 #from pyperclip import copy
 #from time import strftime, localtime
 
+
 class MenuBar:
   
   """
@@ -12,8 +13,8 @@ class MenuBar:
   
   """
   ###############################################  
-  SETTINGS_HEIGHT = 357       #Height of the settings window
-  SETTINGS_WIDTH = 350        #Width of the settings window
+  SETTINGS_HEIGHT = 500      #Height of the settings window  357
+  SETTINGS_WIDTH = 350        #Width of the settings window   
   
   size_of_menu_separator = 172  #Space that pushes the settings button to the right
   settings_menu_x_offset = 115  #Offset from the top left corner of the main window
@@ -89,7 +90,6 @@ class MenuBar:
     """
     
     root = central_frame_of_settings_menu
-    
     settings_panel_frame = tk.LabelFrame(root, text = "Setting Options")
     settings_panel_frame.grid(column = panel_cords[0], row=panel_cords[1], sticky="w")
     
@@ -97,6 +97,7 @@ class MenuBar:
                                 font = 10, height = 16, width = 10, exportselection = False)
     
     for item in panel_options:
+      
       self.settings_panel.insert(tk.END, item)
     self.settings_panel.grid(column=0, row=0)
     

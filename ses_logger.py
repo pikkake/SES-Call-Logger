@@ -17,10 +17,10 @@ def nothing():
 class SES_Logger:
   ##############################################################
   APP_TITLE = "SES Call Logger v0.7"
-  MIN_APP_WIDTH = 600
-  MIN_APP_HEIGHT = 450  
+  MIN_APP_WIDTH = 600   #600
+  MIN_APP_HEIGHT = 450  #450
   BANNER_SEPARATOR = 70
-  NUM_OF_APS = 5
+  NUM_OF_APS = 4
   
   VERTICAL_SCROLL_FRAME_HEIGHT = 340      #340
 
@@ -64,6 +64,7 @@ class SES_Logger:
       theme = self.menu.return_Settings()['Theme']
       self.banner_color = theme['banner_color']
       self.bg_theme = theme['bg_theme']
+      self.active_bg_theme = theme['bg_theme']
       self.fg_theme = theme['fg_theme']
       self.button_bg = theme['button_bg']
       self.button_fg = theme['button_fg']
@@ -72,6 +73,7 @@ class SES_Logger:
     except AssertionError:
       self.banner_color = '#3B4483'
       self.bg_theme = '#E1E1E1'
+      self.active_bg_theme = '#E1E1E1'
       self.fg_theme = 'black'
       self.button_bg = '#dedede'
       self.button_fg = 'black'
@@ -219,19 +221,20 @@ class SES_Logger:
     
     """
     for i in range(self.NUM_OF_APS):
+      #master frame, tmp frame is there to control spacing
       master = tk.LabelFrame(self.scrollFrame.interior, text= 'AP '+str(i+1), bg= self.bg_theme)
+      #temp frame to hold created widgets during each iteration
       tmp = tk.Frame(master, bg= self.bg_theme, width= scrollBoxWidth, height= 70)
       tmp.grid_propagate(False)
       
+      #places both the frames onto the grid
       master.grid()
       tmp.grid()
       
       ap = 'ap_' + str(i+1)       #name of the ap, thrown into the self.vars object
-      
-      #self.vars.variables[ap]['cable'].set('2d93' + str(i+1))
-      
-      cable_Label = tk.Entry(tmp, width= 6, textvariable = self.vars.variables[ap]['cable'])
-      self.vars.variables[ap]['cable'].set("2d93"+str(i+1))
+            
+      cable_Label = tk.Entry(tmp, width= 6, textvariable = self.vars.variables[ap]['cable'])    #Cable entry box field
+      self.vars.variables[ap]['cable'].set("2d93"+str(i+1))                                     #Assigns the variable of the cable entry field to a predetermined cable name
       
       
       port_Label = tk.Label(tmp, text= 'Port:')
@@ -239,7 +242,11 @@ class SES_Logger:
       
       port = tk.Entry(tmp, width= 4, textvariable = self.vars.variables[ap]['port'])
       mac = tk.Entry(tmp, width= 16, textvariable = self.vars.variables[ap]['mac'])
-      
+
+      check = tk.Checkbutton(tmp, text= "Complete", variable = self.vars.variables[ap]['check'])
+        
+
+      #For Loops that place the widgets into the grid
       j = 0
       for label in [cable_Label, port_Label, mac_Label]:
         label.config(bg= self.bg_theme)
@@ -249,9 +256,13 @@ class SES_Logger:
         else:
           label.grid(column= 0, row= j, sticky= 'nw')
         j+= 1
-      j = 1
-      for entry in [port, mac]:
+      j = 0
+      for entry in [check, port, mac]: #Where to place check box   <<<<<<<<<<<<<<<<<<<<<<<<<<<<
         entry.grid(column=1, row= j, sticky= 'nw')
+        if j == 0:
+          entry.config(bg = self.bg_theme, activebackground = self.active_bg_theme)
+          entry.grid(padx = 35)
+          self.vars.assign_Widget_From_SES_Logger('check', entry, "ap_"+str(i+1))
         if j == 1:
           
           self.vars.assign_Widget_From_SES_Logger('port', entry, "ap_"+str(i+1))
@@ -262,11 +273,14 @@ class SES_Logger:
       ap_frame_list[-1].grid()
  
     self.scrollFrame.grid()
-    
     ####################################################
   def create_Textbox_Frames(self, centerFrame, col, row):
     txtBox_Master_Frame = tk.Frame(centerFrame, bg = self.bg_theme)
     txtBox_Master_Frame.grid(column= col, row= row, sticky='nsew', padx= 5)
+    
+    #Textbox Buttons
+    button_Frame = tk.Frame(txtBox_Master_Frame, bg= self.bg_theme)
+    self.create_Textbox_Buttons(button_Frame)
     
     #Notepad text area
     note_Frame = tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'Notes', borderwidth= 0)  
@@ -274,22 +288,24 @@ class SES_Logger:
     notes.grid()
     self.vars.assign_TextBox_From_SES_Logger('notes', notes)      #Assign to instanced variable inside ses_data
     
-    #buttons TBA
-    
     #Format (POTENTIAL) output text area
-    formatted_Frame= tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'SES Info', borderwidth= 0, height= 150)
+    formatted_Frame= tk.LabelFrame(txtBox_Master_Frame, bg= self.bg_theme, text= 'Call Info', borderwidth= 0, height= 150)
     formatted_Frame.grid_propagate(False)
     formatted_Output= scrolledtext.ScrolledText(formatted_Frame, width= 47, height= 8, padx= 5, wrap= tk.WORD)
     formatted_Output.grid()
     self.vars.assign_TextBox_From_SES_Logger('output', formatted_Output)      #Assign to instanced variable inside ses_data
     
     #place frames 
-    note_Frame.grid(column= 0, row= 0, sticky='nsew')
+    button_Frame.grid(column= 0, row= 0, sticky='nsew')
+    note_Frame.grid(column= 0, row= 1, sticky='nsew')
+    formatted_Frame.grid(column= 0, row= 2, sticky= 'nsew')
     
-    formatted_Frame.grid(column= 0, row= 1, sticky= 'nsew')
     
+  def create_Textbox_Buttons(self, button_Frame):
     
+    release_Button = releaseCode_Button(button_Frame, self.menu.return_Settings()['Theme'], col= 0, row= 0 )
     
+    pass
   def KDS_Changer_TS(self):
     #msg = "KDS Timestamp copied to clipboard"
     initials = self.menu.return_Settings()['User']['Initials']
@@ -364,7 +380,44 @@ class VerticalScrolledFrame(tk.Frame):
                 # update the inner frame's width to fill the canvas
                 canvas.itemconfigure(interior_id, width=canvas.winfo_width())
         canvas.bind('<Configure>', _configure_canvas)
+class releaseCode_Button(tk.Button):
+  def __init__(self, root, theme, col= 0, row= 0, *args, **kw):
+        
+    tk.Button.__init__(self, root, *args, **kw)
+    
+    release_Button = tk.Button(root, text = 'Release Code')
+    release_Button.grid(column= col, row= row, sticky= 'nsew')
+    
 
+    def config_Style(reset = False):
+     
+      def set_Style():
+        #Creates a set of variables that is associated with the theme.
+        try:
+          assert reset == False
+          self.button_bg = theme['button_bg']
+          self.button_fg = theme['button_fg']
+          self.button_active_bg = theme['button_active_bg']
+          self.button_active_fg = theme['button_active_fg']
+        except AssertionError:
+          self.button_bg = '#dedede'
+          self.button_fg = 'black'
+          self.button_active_bg = '#c9c9c9'
+          self.button_active_fg = 'black'
+      
+      #calls the function that sets the self variables of the theme
+      set_Style()
+      
+      release_Button.config(activebackground= self.button_active_bg, activeforeground= self.button_active_fg)
+      release_Button.config(bg= self.button_bg, fg= self.button_fg)
+      
+    try:
+      config_Style()
+    except:
+      config_Style(True)
+    
+    
+    
 if __name__ == "__main__":
   
   root = tk.Tk()
