@@ -19,16 +19,12 @@ class SES:
       'button_active_fg' : 'black',
       'on_top': 0
         }
-
-    null = {
-        "Null_Value":"Nothing"
-        }
     
     
     self.master = {
      'User':user,
-     'Theme':theme,
-     'NULL': null
+     'Theme':theme
+     
      
      }
   def returnMaster(self):

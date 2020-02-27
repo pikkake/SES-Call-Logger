@@ -2,9 +2,10 @@
 
 import tkinter as tk
 from pyperclip import copy
+from collections import OrderedDict
 import os
 from time import localtime, strftime
-import etc.setting_Data as sd
+import setting_Data as sd
 
 
 class ses_data:
@@ -44,7 +45,6 @@ class ses_data:
       for key in self.data_Keys:
         tmp = {key: ''}
         self.output_Buffer.update(tmp)
-        
       i= 0
       while i < self.num_of_aps:
         ap_name = 'ap_' + str(i+1)
@@ -161,7 +161,6 @@ class ses_data:
     def format_Buffer(ap_key):
       
       # Formats the actual buffer that holds the info to be thrown into the textboxes
-      
       try:
         widget_input = widget.get().strip()
         assert ap_key == ''    #Thows an AssertionError if the ap_key isn't empty (is created on an AP entry widget).
@@ -218,42 +217,43 @@ class ses_data:
     
     
     def output_Buffer():
+    
       self.textboxes['output'].delete('1.0', tk.END)
-      for line in self.output_Buffer:
+    
+      for line in self.data_Keys:
         if self.output_Buffer[line] != '' and line != 'release':
-          try:
-            assert not isinstance(self.output_Buffer[line], dict)
-            tmp = self.output_Buffer[line]
-            if line == 'store':
-              self.textboxes['output'].insert(tk.END, tmp)
-            elif line == 'core_mac':
-              self.textboxes['output'].insert(tk.END, " "+tmp)
-            elif line != 'core_Room':
-              self.textboxes['output'].insert(tk.END, "\n"+tmp)
-          except AssertionError:
-            i = 0
-            buffer = ''
-            while i < self.num_of_aps:
-              ap_name = 'ap_' + str(i+1)
-              ap_form_input = False
+          assert not isinstance(self.output_Buffer[line], dict)
+          tmp = self.output_Buffer[line]
+          if line == 'store':
+            self.textboxes['output'].insert(tk.END, tmp)
+          elif line == 'core_port':
+            self.textboxes['output'].insert(tk.END, "\n"+tmp)  
+          elif line == 'core_mac':
+            self.textboxes['output'].insert(tk.END, " "+tmp)  
+          elif line != 'core_Room':
+            self.textboxes['output'].insert(tk.END, "\n"+tmp)
+
+      for line in self.ap_Keys:
+        i = 0
+        buffer = ''
+        while i < self.num_of_aps:
+          ap_name = 'ap_' + str(i+1)
+          ap_form_input = False
               
-              for form_field in self.output_Buffer[ap_name]:      #boolean to check if any of the form fields are filled
-                if self.output_Buffer[ap_name][form_field] != '':
-                  ap_form_input = True
+          for form_field in self.output_Buffer[ap_name]:      #boolean to check if any of the form fields are filled
+            if self.output_Buffer[ap_name][form_field] != '':
+              ap_form_input = True
                   
-              if ap_form_input:                                   #Lists the name of the AP and its associated cable identifier if any form is filled for the AP.
-                buffer += "\nAP-"+str(i+1) + " "
-                buffer += self.variables[ap_name]['cable'].get().strip()
+          if ap_form_input:                                   #Lists the name of the AP and its associated cable identifier if any form is filled for the AP.
+            buffer += "\nAP-"+str(i+1) + " "
+            buffer += self.variables[ap_name]['cable'].get().strip()
                 
-              for ap_value in self.output_Buffer[ap_name]:        #Adds to the buffer if any of the form fields are filled
-                if self.output_Buffer[ap_name][ap_value] != '':                                        #Replace later with actual form input
-                  if ap_value == 'port':
-                    buffer+= self.output_Buffer[ap_name][ap_value]
-                  elif ap_value == 'mac':
-                    buffer+= self.output_Buffer[ap_name][ap_value]
-              i+= 1
-            self.textboxes['output'].insert(tk.END, buffer)
-            break     #break from the for loop created before the assertion.
+
+          buffer+= self.output_Buffer[ap_name]['port'] + " "
+          buffer+= self.output_Buffer[ap_name]['mac'] 
+          i+= 1
+        self.textboxes['output'].insert(tk.END, buffer)
+        break     #break from the for loop created before the assertion.
     
     format_Buffer(ap_key)
     output_Buffer()

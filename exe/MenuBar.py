@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk
-import etc.setting_Data as sd
+import setting_Data as sd
 #from pyperclip import copy
 #from time import strftime, localtime
 
@@ -84,6 +84,7 @@ class MenuBar:
     #Initialized what to load when Settings is created.
     self.settings_panel.select_set(0)
     self.list_Of_Setting_Frames['User'].mountFrame()
+    self.list_Of_Setting_Frames['Theme'].unmountFrame()
     
   def createListOfOptions(self, central_frame_of_settings_menu, panel_cords, panel_options):
     """
@@ -96,12 +97,12 @@ class MenuBar:
     
     self.settings_panel = tk.Listbox(settings_panel_frame, selectmode = "SINGLE",
                                 font = 10, height = 16, width = 10, exportselection = False)
+
+    #Creating the listbox options MUST BE PROCEDURALLY called due to older python version
+    self.settings_panel.insert(tk.END, 'User')
+    self.settings_panel.insert(tk.END, 'Theme')
     
-    for item in panel_options:
-      
-      self.settings_panel.insert(tk.END, item)
     self.settings_panel.grid(column=0, row=0)
-    
     self.settings_panel.bind('<<ListboxSelect>>', self.listboxSelect)
     
     
@@ -229,13 +230,11 @@ class all_Settings:
     self.master = master
     #Settings are created and stored in local variables.  Class initializations are handled below.
     user_Frame = user_Settings(root, configuration_File)
-    null_Frame = null_Settings_TEST(root, configuration_File)
     theme_Frame = theme_Settings(root, configuration_File)
     
     list_of_Settings = [
         user_Frame,
         theme_Frame,
-        null_Frame
         
         ]
     #Configuration data pulled from a JSON file is stored within this object.
@@ -245,13 +244,13 @@ class all_Settings:
     
     self.dict_Of_Setting_Frames = {}
     #keys = self.config.return_List_Of_Keys
-    i = 0
     
     #Cycles through the list of settings created by the Setting_Data module.
     #Creates a tmp dict and saves the result within the object.
     #IMPORTANT:
     #Settings listed within list_of_Settings MUST MATCH the list of returned keys perfectly.
     
+    """
     for setting_Label in self.config.return_List_Of_Keys():
       try:
         tmp = {setting_Label: list_of_Settings[i]}
@@ -260,7 +259,15 @@ class all_Settings:
         print("Too many keys returned from 'self.config.return_List_Of_Keys()'\n" +setting_Label+" not created." )
       finally:
         i+=1
-
+    """
+    key_List = self.config.return_List_Of_Keys()
+    tmp = {key_List[0]:  list_of_Settings[0]}
+    self.dict_Of_Setting_Frames.update(tmp)
+    
+    tmp = {key_List[1]:  list_of_Settings[1]}
+    self.dict_Of_Setting_Frames.update(tmp)
+    
+    
   def return_Settings_Dict(self):
     """
     Returns the dict containing every setting Object.
@@ -275,7 +282,6 @@ class all_Settings:
     Dict is saves via write_All_Settings()
     """
     final = self.config.return_Raw_Settings()
-    
     for setting in self.dict_Of_Setting_Frames:
       tmp = self.dict_Of_Setting_Frames[setting]
       widget_Dict = tmp.return_dict_Of_Widgets()
@@ -332,7 +338,6 @@ class base_settings:
         if setting_Name.lower() == tmp:
           tmp_Dict = {setting_Name: selected_Widget}
           self.dict_Of_Widgets.update(tmp_Dict)  
-
   def return_dict_Of_Widgets(self):
     return self.dict_Of_Widgets
   def save_Settings(self):
@@ -343,7 +348,7 @@ class base_settings:
   
 class user_Settings(base_settings):
   def __init__(self, root, config):
-    super().__init__(root, config)
+    base_settings.__init__(self, root, config)
     ############################
     
     self.setting_Attribute = "User" #name of the setting
@@ -386,7 +391,7 @@ class user_Settings(base_settings):
   
 class theme_Settings(base_settings):
   def __init__(self, root, config):
-    super().__init__(root, config)
+    base_settings.__init__(self, root, config)
     
     self.setting_Attribute = "Theme" #name of the setting
     self.setting_data = self.config.return_Specified_Setting(self.setting_Attribute)
@@ -484,23 +489,6 @@ class theme_Settings(base_settings):
     self.button_Active_FG.set(items['button_active_fg'])
     self.on_top.set(items['on_top'])
     
-class null_Settings_TEST(base_settings):
-  def __init__(self, root, config):
-    super().__init__(root, config)    
-    ############################
-    
-    self.setting_Attribute = "NULL" #name of the setting
-    self.setting_data = self.config.return_Specified_Setting(self.setting_Attribute)
-    
-    ############################
-    test = tk.Label(self.form, text = "Placeholder for debugging")
-    test_box = tk.Entry(self.form, width = 10, name = 'null_value')
-    
-    test.grid()
-    test_box.grid()
-    entry_List = [
-        test_box]
-    self.create_Dict_Of_Widgets(entry_List)
 
     
     
